@@ -2,7 +2,6 @@ from TwitterAPI import TwitterAPI
 from bs4 import BeautifulSoup
 from base64 import b64decode
 
-import xmltodict
 import requests
 import logging
 import arrow
