@@ -1,4 +1,5 @@
 from TwitterAPI import TwitterAPI
+from bs4 import BeautifulSoup
 from base64 import b64decode
 
 import xmltodict
@@ -10,9 +11,9 @@ import json
 import os
 
 
-# Fri, 12 Apr 2019 18:10:21 -0700
-DATETIME_FORMAT = "ddd, D MMM YYYY HH:mm:ss Z"
-NEW_RELEASES = "https://store.steampowered.com/feeds/newreleases.xml"
+# Apr 13, 2019
+DATETIME_FORMAT = "MMM DD, YYYY"
+NEW_RELEASES = "https://store.steampowered.com/search/?sort_by=Released_DESC&os=win"
 
 
 log = logging.getLogger()
@@ -87,33 +88,27 @@ def handler(event, context):
     now = arrow.utcnow()
     res = requests.get(NEW_RELEASES)
     try:
-        releases = xmltodict.parse(res.text)["rss"]["channel"]
+        page = BeautifulSoup(res.text, features="html.parser")
 
-        # check if new releases page has been updated
-        last_build_date = releases["lastBuildDate"]
-        last = arrow.get(last_build_date, DATETIME_FORMAT).to("UTC")
-
-        if last.day < now.day:
-            log.info(f"No new releases yet. Last updated: {last.humanize()}")
-            return
-
-        yesterday = now.replace(days=-1)
-        items = releases["item"]
-        for game in items:
+        all_games = page.find_all(
+            "div", {"class": "responsive_search_name_combined"}
+        )
+        for game in all_games:
             try:
-                # items are sorted from newest - oldest release date
-                published_date = arrow.get(
-                    game.get("pubDate"), DATETIME_FORMAT).to("UTC")
+                # steampowered link to game page
+                link = game.parent["href"]
 
-                # return if pubDate is before 10AM PST the previous day
-                # since function runs 10AM PST daily
-                if published_date < yesterday:
+                # contains title and release date
+                # '\n\nLevers & Buttons\n\n \n\nApr 13, 2019\n\n\n\n-25%\n\n'
+                info = game.text.strip().split("\n\n")
+                title = info[0]
+
+                # games are sorted by release date
+                released = arrow.get(info[2], DATETIME_FORMAT)
+
+                # return if no new games have been released
+                if released.day < now.day:
                     return
-
-                # Now Available on Steam - GAME TITLE, % off!
-                title = game.get("title").split("-")[1].strip().split(",")[0]
-                # steampowered news link about game
-                link = game.get("link")
 
                 tweet(title=title, link=link)
                 log.info(f"Finished tweeting about {title}")
