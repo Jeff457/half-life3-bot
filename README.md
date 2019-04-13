@@ -4,15 +4,11 @@ A serverless Twitter Bot that Tweets new releases on Steam and if that new relea
 
 ![Sample Tweet](tweet.PNG)
 
-***
-
 ## Prerequisites
 
 * Python 3.6.x
 * [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
 * [Twitter API Credentials](https://developer.twitter.com/en/docs/basics/apps/overview.html)
-
-***
 
 ## Setup
 
@@ -25,7 +21,7 @@ $ cd package
 $ zip -r9 half-life3-bot.zip .
 $ cd ..
 $ zip -g half-life3-bot.zip half-life3-bot.py
-aws lambda create-function --function-name half-life3-bot \
+$ aws lambda create-function --function-name half-life3-bot \
 --zip-file fileb://half-life3-bot.zip --handler half-life3-bot.handler \
 --runtime python3.6 --role arn:aws:iam::123456789012:role/lambda-cli-role
 ```
