@@ -2,7 +2,7 @@
 
 A serverless Twitter Bot that Tweets new releases on Steam and if that new release happens to be Half-Life 3.
 
-![Sample Tweet](tweet.png)
+![Sample Tweet](tweet.PNG)
 
 ***
 
