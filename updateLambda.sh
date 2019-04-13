@@ -8,9 +8,11 @@ ZIP=$DIR/half-life3-bot.zip
 rm $ZIP
 
 # add dependencies to archive
-zip -r9 $ZIP package/
+cd package
+zip -r9 $ZIP .
 
 # add lambda function to archive
+cd ..
 zip -g $ZIP half-life3-bot.py
 
 # update lambda function
