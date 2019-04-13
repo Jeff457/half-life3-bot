@@ -84,26 +84,37 @@ def tweet(*, title: str, link: str, **kwargs):
 
 
 def handler(event, context):
+    now = arrow.utcnow()
     res = requests.get(NEW_RELEASES)
     try:
         releases = xmltodict.parse(res.text)["rss"]["channel"]
 
         # check if new releases page has been updated
         last_build_date = releases["lastBuildDate"]
-        last = arrow.get(last_build_date, DATETIME_FORMAT)
-        now = arrow.now()
+        last = arrow.get(last_build_date, DATETIME_FORMAT).to("UTC")
 
         if last.day < now.day:
             log.info(f"No new releases yet. Last updated: {last.humanize()}")
             return
 
+        yesterday = now.replace(days=-1)
         items = releases["item"]
         for game in items:
             try:
+                # items are sorted from newest - oldest release date
+                published_date = arrow.get(
+                    game.get("pubDate"), DATETIME_FORMAT).to("UTC")
+
+                # return if pubDate is before 10AM PST the previous day
+                # since function runs 10AM PST daily
+                if published_date < yesterday:
+                    return
+
                 # Now Available on Steam - GAME TITLE, % off!
                 title = game.get("title").split("-")[1].strip().split(",")[0]
                 # steampowered news link about game
                 link = game.get("link")
+
                 tweet(title=title, link=link)
                 log.info(f"Finished tweeting about {title}")
             except (IndexError, TweetException) as error:
