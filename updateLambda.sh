@@ -14,3 +14,4 @@ zip -r9 $ZIP package/
 zip -g $ZIP half-life3-bot.py
 
 # update lambda function
+aws lambda update-function-code --function-name half-life3-bot --zip-file fileb://$ZIP
