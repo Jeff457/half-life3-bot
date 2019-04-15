@@ -111,7 +111,9 @@ def handler(event, context):
 
                 tweet(title=title, link=link)
                 log.info(f"Finished tweeting about {title}")
-            except (IndexError, TweetException) as error:
+            except (
+                IndexError, arrow.parser.ParserError, TweetException
+            ) as error:
                 log.error(str(error))
     except KeyError as key_error:
         log.error(str(key_error))
