@@ -102,8 +102,12 @@ def handler(event, context):
                 info = game.text.strip().split("\n\n")
                 title = info[0]
 
-                # games are sorted by release date
-                released = arrow.get(info[2], DATETIME_FORMAT)
+                try:
+                    # games are sorted by release date
+                    released = arrow.get(info[2], DATETIME_FORMAT)
+                except arrow.parser.ParserError as e:
+                    # arrow is dumb
+                    released = arrow.get(info[2], "MMM D, YYYY")
 
                 # return if no new games have been released
                 if released.day < now.day:
